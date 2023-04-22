@@ -6,8 +6,7 @@ const PASSWROD: &str = "password";
 
 fn main() -> error::Result<()> {
     let token = api::login::login(USERNAME, PASSWROD)?;
-
-    dbg!(token);
+    api::submit::submit("fpb", "test.pas", &token)?;
 
     Ok(())
 }
