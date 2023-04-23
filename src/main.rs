@@ -17,11 +17,11 @@ mod api;
 mod error;
 
 const USERNAME: &str = "username";
-const PASSWROD: &str = "password";
+const PASSWORD: &str = "password";
 
 fn main() -> error::Result<()> {
-    let token = api::login::login(USERNAME, PASSWROD)?;
-    api::submit::submit("fpb", "test.pas", &token)?;
+    let token = api::login::login(USERNAME, PASSWORD)?;
+    api::submit::submit("preoii_crew", &["test.txt"; 10], &token)?;
 
     Ok(())
 }

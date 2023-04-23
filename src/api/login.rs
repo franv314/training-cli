@@ -31,7 +31,7 @@ pub fn login(username: &str, password: &str) -> error::Result<String> {
     let token = resp
         .headers()
         .get("set-cookie")
-        .ok_or(error::Error::ApiError(String::from("Failed to login!")))?;
+        .ok_or(error::Error::Api(String::from("Failed to login!")))?;
 
     Ok(String::from(token.to_str().unwrap()))
 }

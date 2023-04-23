@@ -19,26 +19,26 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
-    ApiError(String),
-    GenericError(String),
-    HttpError(reqwest::Error),
-    IoError(io::Error),
+    Api(String),
+    Generic(String),
+    Http(reqwest::Error),
+    Io(io::Error),
 }
 
 impl From<reqwest::Error> for Error {
     fn from(value: reqwest::Error) -> Self {
-        Self::HttpError(value)
+        Self::Http(value)
     }
 }
 
 impl From<&str> for Error {
     fn from(value: &str) -> Self {
-        Self::GenericError(String::from(value))
+        Self::Generic(String::from(value))
     }
 }
 
 impl From<io::Error> for Error {
     fn from(value: io::Error) -> Self {
-        Self::IoError(value)
+        Self::Io(value)
     }
 }

@@ -16,7 +16,8 @@
 use super::SUBMISSION_API_URL;
 use crate::error;
 use base64::{engine::general_purpose, Engine as _};
-use serde_json::{json, Value};
+use serde_json::{json, to_value, Value};
+use std::collections::HashMap;
 use std::fs;
 
 fn get_language(filename: &str) -> Result<String, &str> {
@@ -27,30 +28,41 @@ fn get_language(filename: &str) -> Result<String, &str> {
         "java" => Ok(String::from("Java / JDK")),
         "py" => Ok(String::from("Python 3 / CPython")),
         "pas" => Ok(String::from("Pascal / fpc")),
+        "txt" => Ok(String::from("")),
         _ => Err("Could not resolve source language!"),
     }
 }
 
-pub fn submit(task: &str, filename: &str, token: &str) -> error::Result<()> {
+pub fn submit(task: &str, filenames: &[&str], token: &str) -> error::Result<()> {
     let task_resp = super::get_task::get_task(task)?;
     let submission_format = task_resp
         .get("submission_format")
         .unwrap()
-        .get(0)
-        .unwrap()
-        .as_str()
-        .unwrap();
+        .as_array()
+        .ok_or("Could not get submission format for this task!")?;
+
+    if submission_format.len() > filenames.len() {
+        return Err(error::Error::Generic(String::from(
+            "Not enough files to submit!",
+        )));
+    }
+
+    let files = to_value(HashMap::<&str, _>::from_iter(submission_format
+        .iter()
+        .enumerate()
+        .map(|(i, file)| -> Result<_, error::Error> { Ok((
+            file.as_str().unwrap(),
+            json!({
+                "data": general_purpose::STANDARD.encode(fs::read_to_string(filenames[i])?.as_bytes()),
+                "language": get_language(filenames[i])?,
+                "filename": filenames[i],
+            }))
+        )} ).collect::<Result<Vec<_>, _>>()?)).unwrap();
 
     let req = json!({
         "action": "new",
         "task_name": task,
-        "files": {
-            submission_format : {
-                "data": general_purpose::STANDARD.encode(fs::read_to_string(filename)?.as_bytes()),
-                "language": get_language(filename)?,
-                "filename": filename,
-            },
-        },
+        "files": files,
     });
 
     let client = reqwest::blocking::Client::new();
@@ -64,7 +76,7 @@ pub fn submit(task: &str, filename: &str, token: &str) -> error::Result<()> {
     let json: Value = resp.json()?;
 
     if json.get("success").unwrap().as_i64().unwrap() == 0 {
-        return error::Result::Err(error::Error::ApiError(
+        return error::Result::Err(error::Error::Api(
             String::from("Failed to submit! ") + json.get("error").unwrap().as_str().unwrap(),
         ));
     }
