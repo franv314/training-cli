@@ -37,6 +37,12 @@ impl From<&str> for Error {
     }
 }
 
+impl From<String> for Error {
+    fn from(value: String) -> Self {
+        Self::Generic(value)
+    }
+}
+
 impl From<io::Error> for Error {
     fn from(value: io::Error) -> Self {
         Self::Io(value)

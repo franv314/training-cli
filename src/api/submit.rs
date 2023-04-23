@@ -33,7 +33,7 @@ fn get_language(filename: &str) -> Result<String, &str> {
     }
 }
 
-pub fn submit(task: &str, filenames: &[&str], token: &str) -> error::Result<()> {
+pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()> {
     let task_resp = super::get_task::get_task(task)?;
     let submission_format = task_resp
         .get("submission_format")
@@ -53,8 +53,8 @@ pub fn submit(task: &str, filenames: &[&str], token: &str) -> error::Result<()> 
         .map(|(i, file)| -> Result<_, error::Error> { Ok((
             file.as_str().unwrap(),
             json!({
-                "data": general_purpose::STANDARD.encode(fs::read_to_string(filenames[i])?.as_bytes()),
-                "language": get_language(filenames[i])?,
+                "data": general_purpose::STANDARD.encode(fs::read_to_string(&filenames[i])?.as_bytes()),
+                "language": get_language(&filenames[i])?,
                 "filename": filenames[i],
             }))
         )} ).collect::<Result<Vec<_>, _>>()?)).unwrap();
