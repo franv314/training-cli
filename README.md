@@ -1,4 +1,4 @@
-cmsocial-cli
+training-cli
 ============
 
-Futura (forse) interfaccia per [training.olinfo.it](training.olinfo.it)
+Futura (forse) interfaccia per [training.olinfo.it](training.olinfo.it).
