@@ -17,3 +17,4 @@ Utilizzo
 * `training-cli login` esegue interattivamente il login e salva il token nel file specificato.
 * `training-cli logout` elimina il file con il token.
 * `training-cli submit [task_name] [file1] ...` sottomette i file indicati al task indicato.
+* `training-cli list-sub [task-name] [optional: # of subs]` elenca le sottoposizioni più recenti sul task indicato.

@@ -13,25 +13,32 @@
  *  limitations under the License.
  */
 
-use super::USER_API_URL;
+use super::SUBMISSION_API_URL;
 use crate::error;
-use serde_json::json;
+use serde_json::{json, Value};
 
-pub fn login(username: &str, password: &str) -> error::Result<String> {
+pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Value> {
     let req = json!({
-        "action": "login",
-        "keep_signed": "true",
-        "username": username,
-        "password": password,
+        "action": "list",
+        "task_name": task,
     });
 
     let client = reqwest::blocking::Client::new();
-    let resp = client.post(USER_API_URL).json(&req).send()?;
+    let resp = client
+        .post(SUBMISSION_API_URL)
+        .header("Cookie", token)
+        .header("Content-Type", "application/json")
+        .json(&req)
+        .send()?;
 
-    let token = resp
-        .headers()
-        .get("set-cookie")
-        .ok_or(error::Error::Api("Failed to login!".to_string()))?;
+    let json: Value = resp.json()?;
 
-    Ok(token.to_str().unwrap().to_string())
+    if json.get("success").unwrap().as_i64().unwrap() == 0 {
+        return error::Result::Err(error::Error::Api(
+            "Failed to fetch submissions! ".to_string()
+                + json.get("error").unwrap().as_str().unwrap(),
+        ));
+    }
+
+    Ok(json)
 }

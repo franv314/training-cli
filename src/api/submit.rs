@@ -23,12 +23,12 @@ use std::fs;
 fn get_language(filename: &str) -> Result<String, &str> {
     let extension = filename.split(|c| c == '.').last().unwrap_or("");
     match extension {
-        "cc" | "cpp" => Ok(String::from("C++17 / g++")),
-        "c" => Ok(String::from("C11 / gcc")),
-        "java" => Ok(String::from("Java / JDK")),
-        "py" => Ok(String::from("Python 3 / CPython")),
-        "pas" => Ok(String::from("Pascal / fpc")),
-        "txt" => Ok(String::from("")),
+        "cc" | "cpp" => Ok("C++17 / g++".to_string()),
+        "c" => Ok("C11 / gcc".to_string()),
+        "java" => Ok("Java / JDK".to_string()),
+        "py" => Ok("Python 3 / CPython".to_string()),
+        "pas" => Ok("Pascal / fpc".to_string()),
+        "txt" => Ok("".to_string()),
         _ => Err("Could not resolve source language!"),
     }
 }
@@ -42,9 +42,9 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
         .ok_or("Could not get submission format for this task!")?;
 
     if submission_format.len() > filenames.len() {
-        return Err(error::Error::Generic(String::from(
-            "Not enough files to submit!",
-        )));
+        return Err(error::Error::Generic(
+            "Not enough files to submit!".to_string(),
+        ));
     }
 
     let files = to_value(HashMap::<&str, _>::from_iter(submission_format
@@ -77,7 +77,7 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
 
     if json.get("success").unwrap().as_i64().unwrap() == 0 {
         return error::Result::Err(error::Error::Api(
-            String::from("Failed to submit! ") + json.get("error").unwrap().as_str().unwrap(),
+            "Failed to submit! ".to_string() + json.get("error").unwrap().as_str().unwrap(),
         ));
     }
 

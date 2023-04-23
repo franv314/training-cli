@@ -33,7 +33,7 @@ impl From<reqwest::Error> for Error {
 
 impl From<&str> for Error {
     fn from(value: &str) -> Self {
-        Self::Generic(String::from(value))
+        Self::Generic(value.to_string())
     }
 }
 

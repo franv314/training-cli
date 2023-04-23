@@ -15,60 +15,48 @@
 
 mod api;
 mod error;
+mod ui;
 
 use std::env;
 use std::fs;
-use std::io::{self, Write};
 
-const TOKEN_FILE: &str = "INSERISCI IL PERCORSO COMPLETO";
-
-fn logout() -> error::Result<()> {
-    fs::remove_file(TOKEN_FILE)?;
-    Ok(())
-}
-
-fn login() -> error::Result<()> {
-    let mut username = String::new();
-    let mut password = String::new();
-
-    print!("Username: ");
-    io::stdout().flush()?;
-    io::stdin().read_line(&mut username)?;
-    username.pop();
-
-    print!("Password: ");
-    io::stdout().flush()?;
-    io::stdin().read_line(&mut password)?;
-    password.pop();
-
-    let token = api::login::login(&username, &password)?;
-
-    fs::write(TOKEN_FILE, token)?;
-
-    println!("Token saved at {TOKEN_FILE}. Delete that file or run `training-cli logout` to remove it");
-    Ok(())
-}
+//const TOKEN_FILE: &str = "INSERISCI IL PERCORSO COMPLETO";
+const TOKEN_FILE: &str = "./cookie.txt";
 
 fn main() -> error::Result<()> {
     let args: Vec<_> = env::args().collect();
 
-    if args[1] == "logout" {
-        return logout();
-    }
-
     if args[1] == "login" {
-        return login();
+        return ui::login();
     }
 
     let token = fs::read_to_string(TOKEN_FILE)
         .map_err(|_| "No token found! Login via `training-cli login`")?;
 
-    if args[1] == "submit" {
+    if args[1] == "logout" {
+        ui::logout()?;
+    } else if args[1] == "submit" {
         if args.len() < 4 {
             println!("Usage: `training-cli submit [task_name] [file1] ...`");
-            return Err(error::Error::Generic(String::from("Not enough arguments!")));
+            return Err(error::Error::Generic("Not enough arguments!".to_string()));
         }
         api::submit::submit(&args[2], &args[3..], &token)?;
+    } else if args[1] == "list-sub" {
+        if args.len() < 3 {
+            println!("Usage: `training-cli list-sub [task-name] [optional: # of subs]`");
+            return Err(error::Error::Generic("Not enough arguments!".to_string()));
+        }
+
+        let no = if args.len() == 3 {
+            usize::MAX
+        } else {
+            args[3]
+                .parse()
+                .map_err(|_| "Number of submissions to show should be an integer")?
+        };
+
+        let subs = api::get_submissions::get_submissions_on_task(&args[2], &token)?;
+        ui::print_submissions(&subs, no);
     }
 
     Ok(())

@@ -26,5 +26,13 @@ pub fn get_task(task: &str) -> error::Result<Value> {
     let client = reqwest::blocking::Client::new();
     let resp = client.post(TASK_API_URL).json(&req).send()?;
 
-    Ok(resp.json()?)
+    let json: Value = resp.json()?;
+
+    if json.get("success").unwrap().as_i64().unwrap() == 0 {
+        return error::Result::Err(error::Error::Api(
+            "Failed to fetch task! ".to_string() + json.get("error").unwrap().as_str().unwrap(),
+        ));
+    }
+
+    Ok(json)
 }

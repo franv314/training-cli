@@ -13,6 +13,7 @@
  *  limitations under the License.
  */
 
+pub mod get_submissions;
 pub mod get_task;
 pub mod login;
 pub mod submit;
