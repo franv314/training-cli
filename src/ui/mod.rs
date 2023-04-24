@@ -36,7 +36,6 @@ pub fn login() -> error::Result<()> {
 
 pub fn print_submissions(subs: &Value, count: usize) {
     let subs = subs.get("submissions").unwrap().as_array().unwrap();
-    dbg!(subs);
     for sub in &subs[..cmp::min(count, subs.len())] {
         let compilation_outcome = sub.get("compilation_outcome").unwrap();
         if compilation_outcome == &Value::Null {
