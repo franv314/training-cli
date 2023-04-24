@@ -20,11 +20,14 @@ mod ui;
 use std::env;
 use std::fs;
 
-//const TOKEN_FILE: &str = "INSERISCI IL PERCORSO COMPLETO";
-const TOKEN_FILE: &str = "./cookie.txt";
+const TOKEN_FILE: &str = "INSERISCI IL PERCORSO COMPLETO";
 
 fn main() -> error::Result<()> {
     let args: Vec<_> = env::args().collect();
+
+    if args.len() == 1 {
+        return Err(error::Error::Generic("No command given!".to_string()));
+    }
 
     if args[1] == "login" {
         return ui::login();
