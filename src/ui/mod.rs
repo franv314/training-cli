@@ -5,9 +5,9 @@ use std::cmp;
 use std::fs;
 use std::io::{self, Write};
 
-const BYTES_IN_KIBIBYTES: i64 = 1024;
-const BYTES_IN_MEBIBYTES: i64 = 1048576;
-const BYTES_IN_GIBIBYTES: i64 = 1073741824;
+const BYTES_IN_KIBIBYTE: i64 = 1024;
+const BYTES_IN_MEBIBYTE: i64 = 1048576;
+const BYTES_IN_GIBIBYTE: i64 = 1073741824;
 
 pub fn logout() -> error::Result<()> {
     fs::remove_file(TOKEN_FILE)?;
@@ -32,9 +32,7 @@ pub fn login() -> error::Result<()> {
 
     fs::write(TOKEN_FILE, token)?;
 
-    println!(
-        "Token saved at {TOKEN_FILE}. Delete that file or run `training-cli logout` to remove it"
-    );
+    println!("Token saved at {TOKEN_FILE}. Delete that file or run `training-cli logout` to remove it");
     Ok(())
 }
 
@@ -103,13 +101,7 @@ pub fn print_submission_details(details: &Value) {
 
             let testcases = subtask.get("testcases").unwrap().as_array().unwrap();
             for testcase in testcases {
-                let idx = testcase
-                    .get("idx")
-                    .unwrap()
-                    .as_str()
-                    .unwrap()
-                    .parse::<i64>()
-                    .unwrap();
+                let idx: i64 = testcase.get("idx").unwrap().as_str().unwrap().parse().unwrap();
                 let memory = testcase.get("memory").unwrap().as_i64().unwrap();
                 let outcome = testcase.get("outcome").unwrap().as_str().unwrap();
                 let text = testcase.get("text").unwrap().as_str().unwrap();
@@ -134,11 +126,11 @@ pub fn print_submission_details(details: &Value) {
 }
 
 fn memory_string(memory: i64) -> String {
-    if memory < BYTES_IN_MEBIBYTES {
-        format!("{:>5.1} kiB", memory as f64 / BYTES_IN_KIBIBYTES as f64)
-    } else if memory < BYTES_IN_GIBIBYTES {
-        format!("{:>5.1} MiB", memory as f64 / BYTES_IN_MEBIBYTES as f64)
+    if memory < BYTES_IN_MEBIBYTE {
+        format!("{:>5.1} kiB", memory as f64 / BYTES_IN_KIBIBYTE as f64)
+    } else if memory < BYTES_IN_GIBIBYTE {
+        format!("{:>5.1} MiB", memory as f64 / BYTES_IN_MEBIBYTE as f64)
     } else {
-        format!("{:>5.1} GiB", memory as f64 / BYTES_IN_GIBIBYTES as f64)
+        format!("{:>5.1} GiB", memory as f64 / BYTES_IN_GIBIBYTE as f64)
     }
 }

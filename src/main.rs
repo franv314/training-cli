@@ -33,8 +33,7 @@ fn main() -> error::Result<()> {
         return ui::login();
     }
 
-    let token = fs::read_to_string(TOKEN_FILE)
-        .map_err(|_| "No token found! Login via `training-cli login`")?;
+    let token = fs::read_to_string(TOKEN_FILE).map_err(|_| "No token found! Login via `training-cli login`")?;
 
     if args[1] == "logout" {
         ui::logout()?;
@@ -66,9 +65,7 @@ fn main() -> error::Result<()> {
             return Err(error::Error::Generic("Not enough arguments!".to_string()));
         }
 
-        let sub_id = args[2]
-            .parse()
-            .map_err(|_| "Submission id should be an integer!")?;
+        let sub_id = args[2].parse().map_err(|_| "Submission id should be an integer!")?;
 
         let sub_details = api::get_submissions::get_submission_details(sub_id, &token)?;
         ui::print_submission_details(&sub_details);

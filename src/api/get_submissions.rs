@@ -35,8 +35,7 @@ pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Value> 
 
     if json.get("success").unwrap().as_i64().unwrap() == 0 {
         return error::Result::Err(error::Error::Api(
-            "Failed to fetch submissions! ".to_string()
-                + json.get("error").unwrap().as_str().unwrap(),
+            "Failed to fetch submissions! ".to_string() + json.get("error").unwrap().as_str().unwrap(),
         ));
     }
 
@@ -61,8 +60,7 @@ pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<Value> 
 
     if json.get("success").unwrap().as_i64().unwrap() == 0 {
         return error::Result::Err(error::Error::Api(
-            "Failed to fetch submission! ".to_string()
-                + json.get("error").unwrap().as_str().unwrap(),
+            "Failed to fetch submission! ".to_string() + json.get("error").unwrap().as_str().unwrap(),
         ));
     }
 

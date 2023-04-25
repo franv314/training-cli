@@ -42,22 +42,26 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
         .ok_or("Could not get submission format for this task!")?;
 
     if submission_format.len() > filenames.len() {
-        return Err(error::Error::Generic(
-            "Not enough files to submit!".to_string(),
-        ));
+        return Err(error::Error::Generic("Not enough files to submit!".to_string()));
     }
 
-    let files = to_value(HashMap::<&str, _>::from_iter(submission_format
-        .iter()
-        .enumerate()
-        .map(|(i, file)| -> Result<_, error::Error> { Ok((
-            file.as_str().unwrap(),
-            json!({
-                "data": general_purpose::STANDARD.encode(fs::read_to_string(&filenames[i])?.as_bytes()),
-                "language": get_language(&filenames[i])?,
-                "filename": filenames[i],
-            }))
-        )} ).collect::<Result<Vec<_>, _>>()?)).unwrap();
+    let files = to_value(HashMap::<&str, _>::from_iter(
+        submission_format
+            .iter()
+            .enumerate()
+            .map(|(i, file)| -> Result<_, error::Error> {
+                Ok((
+                    file.as_str().unwrap(),
+                    json!({
+                        "data": general_purpose::STANDARD.encode(fs::read_to_string(&filenames[i])?.as_bytes()),
+                        "language": get_language(&filenames[i])?,
+                        "filename": filenames[i],
+                    }),
+                ))
+            })
+            .collect::<Result<Vec<_>, _>>()?,
+    ))
+    .unwrap();
 
     let req = json!({
         "action": "new",
