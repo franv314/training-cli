@@ -113,7 +113,7 @@ pub fn print_submission_details(details: &Value) {
                     println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.yellow());
                 } else {
                     println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.red());
-                };
+                }
             }
         }
     }
