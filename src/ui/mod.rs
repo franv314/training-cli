@@ -107,19 +107,13 @@ pub fn print_submission_details(details: &Value) {
                 let text = testcase.get("text").unwrap().as_str().unwrap();
                 let time = testcase.get("time").unwrap().as_f64().unwrap();
 
-                println!(
-                    "{:>3}: {:>6.3} s {} {}",
-                    idx,
-                    time,
-                    memory_string(memory),
-                    if outcome == "Correct" {
-                        text.green()
-                    } else if outcome == "Partially correct" {
-                        text.yellow()
-                    } else {
-                        text.red()
-                    }
-                );
+                if outcome == "Correct" {
+                    println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.green());
+                } else if outcome == "Partially correct" {
+                    println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.yellow());
+                } else {
+                    println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.red());
+                };
             }
         }
     }
