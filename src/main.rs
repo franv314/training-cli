@@ -55,11 +55,23 @@ fn main() -> error::Result<()> {
         } else {
             args[3]
                 .parse()
-                .map_err(|_| "Number of submissions to show should be an integer")?
+                .map_err(|_| "Number of submissions to show should be an integer!")?
         };
 
         let subs = api::get_submissions::get_submissions_on_task(&args[2], &token)?;
         ui::print_submissions(&subs, no);
+    } else if args[1] == "sub-details" {
+        if args.len() < 3 {
+            println!("Usage: `training-cli sub-details [sub_id]`");
+            return Err(error::Error::Generic("Not enough arguments!".to_string()));
+        }
+
+        let sub_id = args[2]
+            .parse()
+            .map_err(|_| "Submission id should be an integer!")?;
+
+        let sub_details = api::get_submissions::get_submission_details(sub_id, &token)?;
+        ui::print_submission_details(&sub_details);
     }
 
     Ok(())

@@ -5,6 +5,10 @@ use std::cmp;
 use std::fs;
 use std::io::{self, Write};
 
+const BYTES_IN_KIBIBYTES: i64 = 1024;
+const BYTES_IN_MEBIBYTES: i64 = 1048576;
+const BYTES_IN_GIBIBYTES: i64 = 1073741824;
+
 pub fn logout() -> error::Result<()> {
     fs::remove_file(TOKEN_FILE)?;
     Ok(())
@@ -37,23 +41,104 @@ pub fn login() -> error::Result<()> {
 pub fn print_submissions(subs: &Value, count: usize) {
     let subs = subs.get("submissions").unwrap().as_array().unwrap();
     for sub in &subs[..cmp::min(count, subs.len())] {
+        let id = sub.get("id").unwrap().as_i64().unwrap();
         let compilation_outcome = sub.get("compilation_outcome").unwrap();
+
         if compilation_outcome == &Value::Null {
-            println!("{}", "Compilazione in corso".blue());
+            println!("{:>7} {}", id, "Compilazione in corso".blue());
         } else if compilation_outcome == &Value::String("fail".to_string()) {
-            println!("{}", "Compilazione fallita".red());
+            println!("{:>7} {}", id, "Compilazione fallita".red());
         } else if sub.get("evaluation_outcome").unwrap() == &Value::Null {
-            println!("{}", "Valutazione in corso".blue());
+            println!("{:>7} {}", id, "Valutazione in corso".blue());
         } else {
             let score = sub.get("score").unwrap().as_f64().unwrap();
             let prnt = format!("{}/100", score);
             if score == 0. {
-                println!("{}", prnt.red());
+                println!("{:>7} {}", id, prnt.red());
             } else if score == 100. {
-                println!("{}", prnt.green());
+                println!("{:>7} {}", id, prnt.green());
             } else {
-                println!("{}", prnt.yellow());
+                println!("{:>7} {}", id, prnt.yellow());
             }
         }
+    }
+}
+
+pub fn print_submission_details(details: &Value) {
+    let compilation_outcome = details.get("compilation_outcome").unwrap();
+    let evaluation_outcome = details.get("evaluation_outcome").unwrap();
+
+    if compilation_outcome == &Value::Null {
+        println!("{}", "Compilazione in corso".blue());
+    } else if compilation_outcome != &Value::String("ok".to_string()) {
+        println!("{}", "Compilazione fallita".red());
+    } else if evaluation_outcome == &Value::Null {
+        println!("{}", "Valutazione in corso".blue());
+    } else if evaluation_outcome != &Value::String("ok".to_string()) {
+        println!("{}", "Valutazione fallita".red());
+    } else {
+        let score = details.get("score").unwrap().as_f64().unwrap();
+        let prnt = format!("{}/100", score);
+        if score == 0. {
+            println!("{}", prnt.red());
+        } else if score == 100. {
+            println!("{}", prnt.green());
+        } else {
+            println!("{}", prnt.yellow());
+        }
+
+        let subtasks = details.get("score_details").unwrap().as_array().unwrap();
+        for subtask in subtasks {
+            let idx = match subtask.get("idx") {
+                Some(x) => x.as_i64().unwrap(),
+                None => 0,
+            };
+            let max_score = subtask.get("max_score").unwrap().as_f64().unwrap();
+            let score = match subtask.get("score") {
+                Some(x) => x.as_f64().unwrap(),
+                None => max_score * subtask.get("score_fraction").unwrap().as_f64().unwrap(),
+            };
+
+            println!("Subtask {}: {:>6.2} / {:>6.2}", idx, score, max_score);
+
+            let testcases = subtask.get("testcases").unwrap().as_array().unwrap();
+            for testcase in testcases {
+                let idx = testcase
+                    .get("idx")
+                    .unwrap()
+                    .as_str()
+                    .unwrap()
+                    .parse::<i64>()
+                    .unwrap();
+                let memory = testcase.get("memory").unwrap().as_i64().unwrap();
+                let outcome = testcase.get("outcome").unwrap().as_str().unwrap();
+                let text = testcase.get("text").unwrap().as_str().unwrap();
+                let time = testcase.get("time").unwrap().as_f64().unwrap();
+
+                println!(
+                    "{:>3}: {:>6.3} s {} {}",
+                    idx,
+                    time,
+                    memory_string(memory),
+                    if outcome == "Correct" {
+                        text.green()
+                    } else if outcome == "Partially correct" {
+                        text.yellow()
+                    } else {
+                        text.red()
+                    }
+                );
+            }
+        }
+    }
+}
+
+fn memory_string(memory: i64) -> String {
+    if memory < BYTES_IN_MEBIBYTES {
+        format!("{:>5.1} kiB", memory as f64 / BYTES_IN_KIBIBYTES as f64)
+    } else if memory < BYTES_IN_GIBIBYTES {
+        format!("{:>5.1} MiB", memory as f64 / BYTES_IN_MEBIBYTES as f64)
+    } else {
+        format!("{:>5.1} GiB", memory as f64 / BYTES_IN_GIBIBYTES as f64)
     }
 }

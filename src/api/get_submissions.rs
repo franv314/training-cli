@@ -42,3 +42,29 @@ pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Value> 
 
     Ok(json)
 }
+
+pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<Value> {
+    let req = json!({
+        "action": "details",
+        "id": sub_id,
+    });
+
+    let client = reqwest::blocking::Client::new();
+    let resp = client
+        .post(SUBMISSION_API_URL)
+        .header("Cookie", token)
+        .header("Content-Type", "application/json")
+        .json(&req)
+        .send()?;
+
+    let json: Value = resp.json()?;
+
+    if json.get("success").unwrap().as_i64().unwrap() == 0 {
+        return error::Result::Err(error::Error::Api(
+            "Failed to fetch submission! ".to_string()
+                + json.get("error").unwrap().as_str().unwrap(),
+        ));
+    }
+
+    Ok(json)
+}
