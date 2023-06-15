@@ -15,7 +15,41 @@
 
 use super::SUBMISSION_API_URL;
 use crate::error;
+use serde::Deserialize;
 use serde_json::{json, Value};
+
+#[derive(Deserialize)]
+pub struct Testcase {
+    pub idx: String,
+    pub memory: i64,
+    pub outcome: String,
+    pub text: String,
+    pub time: f64,
+}
+
+#[derive(Deserialize)]
+pub struct ScoreDetails {
+    pub idx: Option<i32>,
+    pub max_score: i32,
+    pub score_fraction: Option<f64>,
+    pub score: Option<f64>,
+    pub testcases: Vec<Testcase>,
+}
+
+#[derive(Deserialize)]
+pub struct SubmissionInfo {
+    pub score: Option<f64>,
+    pub compilation_outcome: Option<String>,
+    pub evaluation_outcome: Option<String>,
+    pub score_details: Vec<ScoreDetails>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum ResultSubmissionInfo {
+    Success(SubmissionInfo),
+    Insuccess { error: String },
+}
 
 pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Value> {
     let req = json!({
@@ -32,17 +66,18 @@ pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Value> 
         .send()?;
 
     let json: Value = resp.json()?;
-
+    
     if json.get("success").unwrap().as_i64().unwrap() == 0 {
-        return error::Result::Err(error::Error::Api(
-            "Failed to fetch submissions! ".to_string() + json.get("error").unwrap().as_str().unwrap(),
-        ));
+        return error::Result::Err(error::Error::Api(format!(
+            "Failed to fetch submissions! {}",
+            json.get("error").unwrap().as_str().unwrap()
+        )));
     }
 
     Ok(json)
 }
 
-pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<Value> {
+pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<SubmissionInfo> {
     let req = json!({
         "action": "details",
         "id": sub_id,
@@ -56,13 +91,10 @@ pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<Value> 
         .json(&req)
         .send()?;
 
-    let json: Value = resp.json()?;
+    let json: ResultSubmissionInfo = resp.json()?;
 
-    if json.get("success").unwrap().as_i64().unwrap() == 0 {
-        return error::Result::Err(error::Error::Api(
-            "Failed to fetch submission! ".to_string() + json.get("error").unwrap().as_str().unwrap(),
-        ));
+    match json {
+        ResultSubmissionInfo::Success(x) => Ok(x),
+        ResultSubmissionInfo::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch submission! {}", error))),
     }
-
-    Ok(json)
 }

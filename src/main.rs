@@ -20,7 +20,7 @@ mod ui;
 use std::env;
 use std::fs;
 
-const TOKEN_FILE: &str = "INSERISCI IL PERCORSO COMPLETO";
+const TOKEN_FILE: &str = "/home/franv314/.training-cookie.txt";
 
 fn main() -> error::Result<()> {
     let args: Vec<_> = env::args().collect();

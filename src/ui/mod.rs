@@ -13,7 +13,10 @@
  *  limitations under the License.
  */
 
-use crate::{api, error, TOKEN_FILE};
+use crate::{
+    api::{self, get_submissions::SubmissionInfo},
+    error, TOKEN_FILE,
+};
 use colored::*;
 use serde_json::Value;
 use std::cmp;
@@ -77,20 +80,23 @@ pub fn print_submissions(subs: &Value, count: usize) {
     }
 }
 
-pub fn print_submission_details(details: &Value) {
-    let compilation_outcome = details.get("compilation_outcome").unwrap();
-    let evaluation_outcome = details.get("evaluation_outcome").unwrap();
-
-    if compilation_outcome == &Value::Null {
+pub fn print_submission_details(details: &SubmissionInfo) {
+    let Some(compilation_outcome) = &details.compilation_outcome else {
         println!("{}", "Compilazione in corso".blue());
-    } else if compilation_outcome != &Value::String("ok".to_string()) {
-        println!("{}", "Compilazione fallita".red());
-    } else if evaluation_outcome == &Value::Null {
+        return;
+    };
+
+    let Some(evaluation_outcome) = &details.evaluation_outcome else {
         println!("{}", "Valutazione in corso".blue());
-    } else if evaluation_outcome != &Value::String("ok".to_string()) {
+        return;
+    };
+
+    if compilation_outcome != "ok" {
+        println!("{}", "Compilazione fallita".red());
+    } else if evaluation_outcome != "ok" {
         println!("{}", "Valutazione fallita".red());
     } else {
-        let score = details.get("score").unwrap().as_f64().unwrap();
+        let score = details.score.unwrap();
         let prnt = format!("{}/100", score);
         if score == 0. {
             println!("{}", prnt.red());
@@ -100,27 +106,19 @@ pub fn print_submission_details(details: &Value) {
             println!("{}", prnt.yellow());
         }
 
-        let subtasks = details.get("score_details").unwrap().as_array().unwrap();
-        for subtask in subtasks {
-            let idx = match subtask.get("idx") {
-                Some(x) => x.as_i64().unwrap(),
-                None => 0,
-            };
-            let max_score = subtask.get("max_score").unwrap().as_f64().unwrap();
-            let score = match subtask.get("score") {
-                Some(x) => x.as_f64().unwrap(),
-                None => max_score * subtask.get("score_fraction").unwrap().as_f64().unwrap(),
-            };
+        for subtask in &details.score_details {
+            let idx = subtask.idx.unwrap_or(0);
+            let max_score = subtask.max_score;
+            let score = subtask.score.unwrap_or_else(|| max_score as f64 * subtask.score_fraction.unwrap());
 
             println!("Subtask {}: {:>6.2} / {:>6.2}", idx, score, max_score);
 
-            let testcases = subtask.get("testcases").unwrap().as_array().unwrap();
-            for testcase in testcases {
-                let idx: i64 = testcase.get("idx").unwrap().as_str().unwrap().parse().unwrap();
-                let memory = testcase.get("memory").unwrap().as_i64().unwrap();
-                let outcome = testcase.get("outcome").unwrap().as_str().unwrap();
-                let text = testcase.get("text").unwrap().as_str().unwrap();
-                let time = testcase.get("time").unwrap().as_f64().unwrap();
+            for testcase in &subtask.testcases {
+                let idx: i64 = testcase.idx.parse().unwrap();
+                let memory = testcase.memory;
+                let outcome = &testcase.outcome;
+                let text = &testcase.text;
+                let time = testcase.time;
 
                 if outcome == "Correct" {
                     println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.green());
