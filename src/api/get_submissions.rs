@@ -16,7 +16,7 @@
 use super::SUBMISSION_API_URL;
 use crate::error;
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::json;
 
 #[derive(Deserialize)]
 pub struct Testcase {
@@ -51,7 +51,27 @@ enum ResultSubmissionInfo {
     Insuccess { error: String },
 }
 
-pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Value> {
+#[derive(Deserialize)]
+pub struct Submission {
+    pub compilation_outcome: Option<String>,
+    pub evaluation_outcome: Option<String>,
+    pub id: i32,
+    pub score: f64,
+}
+
+#[derive(Deserialize)]
+pub struct SubmissionsOnTask {
+    pub submissions: Vec<Submission>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum ResultSubmissionList {
+    Success(SubmissionsOnTask),
+    Insuccess { error: String },
+}
+
+pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<SubmissionsOnTask> {
     let req = json!({
         "action": "list",
         "task_name": task,
@@ -65,16 +85,12 @@ pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Value> 
         .json(&req)
         .send()?;
 
-    let json: Value = resp.json()?;
-    
-    if json.get("success").unwrap().as_i64().unwrap() == 0 {
-        return error::Result::Err(error::Error::Api(format!(
-            "Failed to fetch submissions! {}",
-            json.get("error").unwrap().as_str().unwrap()
-        )));
-    }
+    let json: ResultSubmissionList = resp.json()?;
 
-    Ok(json)
+    match json {
+        ResultSubmissionList::Success(x) => Ok(x),
+        ResultSubmissionList::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch submissions! {}", error))),
+    }
 }
 
 pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<SubmissionInfo> {

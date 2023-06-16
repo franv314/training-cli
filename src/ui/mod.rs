@@ -14,11 +14,10 @@
  */
 
 use crate::{
-    api::{self, get_submissions::SubmissionInfo},
+    api::{self, get_submissions::SubmissionInfo, get_submissions::SubmissionsOnTask},
     error, TOKEN_FILE,
 };
 use colored::*;
-use serde_json::Value;
 use std::cmp;
 use std::fs;
 use std::io::{self, Write};
@@ -54,24 +53,24 @@ pub fn login() -> error::Result<()> {
     Ok(())
 }
 
-pub fn print_submissions(subs: &Value, count: usize) {
-    let subs = subs.get("submissions").unwrap().as_array().unwrap();
-    for sub in &subs[..cmp::min(count, subs.len())] {
-        let id = sub.get("id").unwrap().as_i64().unwrap();
-        let compilation_outcome = sub.get("compilation_outcome").unwrap();
+pub fn print_submissions(subs: &SubmissionsOnTask, count: usize) {
+    for sub in &subs.submissions[..cmp::min(count, subs.submissions.len())] {
+        let id = sub.id;
 
-        if compilation_outcome == &Value::Null {
+        let Some(compilation_outcome) = &sub.compilation_outcome else {
             println!("{:>7} {}", id, "Compilazione in corso".blue());
-        } else if compilation_outcome == &Value::String("fail".to_string()) {
+            return;
+        };
+
+        if compilation_outcome == "fail" {
             println!("{:>7} {}", id, "Compilazione fallita".red());
-        } else if sub.get("evaluation_outcome").unwrap() == &Value::Null {
+        } else if sub.evaluation_outcome.is_none() {
             println!("{:>7} {}", id, "Valutazione in corso".blue());
         } else {
-            let score = sub.get("score").unwrap().as_f64().unwrap();
-            let prnt = format!("{}/100", score);
-            if score == 0. {
+            let prnt = format!("{}/100", sub.score);
+            if sub.score == 0. {
                 println!("{:>7} {}", id, prnt.red());
-            } else if score == 100. {
+            } else if sub.score == 100. {
                 println!("{:>7} {}", id, prnt.green());
             } else {
                 println!("{:>7} {}", id, prnt.yellow());
