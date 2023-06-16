@@ -55,27 +55,24 @@ pub fn login() -> error::Result<()> {
 
 pub fn print_submissions(subs: &SubmissionsOnTask, count: usize) {
     for sub in &subs.submissions[..cmp::min(count, subs.submissions.len())] {
-        let id = sub.id;
-
-        let Some(compilation_outcome) = &sub.compilation_outcome else {
-            println!("{:>7} {}", id, "Compilazione in corso".blue());
-            return;
+        let outcome_string = if sub.compilation_outcome.is_none() {
+            "Compilazione in corso".blue()
+        } else if sub.compilation_outcome.as_ref().unwrap() == "fail" {
+            "Compilazione fallita".red()
+        } else if sub.evaluation_outcome.is_none() {
+            "Valutazione in corso".blue()
+        } else {
+            let score = format!("{}/100", sub.score);
+            if sub.score == 0. {
+                score.red()
+            } else if sub.score == 100. {
+                score.green()
+            } else {
+                score.yellow()
+            }
         };
 
-        if compilation_outcome == "fail" {
-            println!("{:>7} {}", id, "Compilazione fallita".red());
-        } else if sub.evaluation_outcome.is_none() {
-            println!("{:>7} {}", id, "Valutazione in corso".blue());
-        } else {
-            let prnt = format!("{}/100", sub.score);
-            if sub.score == 0. {
-                println!("{:>7} {}", id, prnt.red());
-            } else if sub.score == 100. {
-                println!("{:>7} {}", id, prnt.green());
-            } else {
-                println!("{:>7} {}", id, prnt.yellow());
-            }
-        }
+        println!("{:>7} {}", sub.id, outcome_string);
     }
 }
 
