@@ -14,7 +14,7 @@
  */
 
 use crate::{
-    api::{self, SubmissionInfo, SubmissionsOnTask},
+    api::{self, SubmissionInfo, SubmissionList},
     error, TOKEN_FILE,
 };
 use colored::*;
@@ -53,7 +53,7 @@ pub fn login() -> error::Result<()> {
     Ok(())
 }
 
-pub fn print_submissions(subs: &SubmissionsOnTask, count: usize) {
+pub fn print_submissions(subs: &SubmissionList, count: usize) {
     for sub in &subs.submissions[..cmp::min(count, subs.submissions.len())] {
         let outcome_string = if sub.compilation_outcome.is_none() {
             "Compilazione in corso".blue()

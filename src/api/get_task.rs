@@ -26,10 +26,10 @@ pub fn get_task(task: &str) -> error::Result<SubmissionFormat> {
     let client = reqwest::blocking::Client::new();
     let resp = client.post(TASK_API_URL).json(&req).send()?;
 
-    let json: TaskFetchResult = resp.json()?;
+    let json: ResultSubmissionFormat = resp.json()?;
 
     match json {
-        TaskFetchResult::Success(x) => Ok(x),
-        TaskFetchResult::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch task! {error}"))),
+        ResultSubmissionFormat::Success(x) => Ok(x),
+        ResultSubmissionFormat::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch task! {error}"))),
     }
 }

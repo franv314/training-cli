@@ -78,10 +78,10 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
         .json(&req)
         .send()?;
 
-    let json: SubmitResult = resp.json()?;
+    let json: ResultSubmit = resp.json()?;
 
     match json {
-        SubmitResult::Success {} => Ok(()),
-        SubmitResult::Insuccess { error } => Err(error::Error::Api(format!("Failed to submit! {error}"))),
+        ResultSubmit::Success(_) => Ok(()),
+        ResultSubmit::Insuccess { error } => Err(error::Error::Api(format!("Failed to submit! {error}"))),
     }
 }

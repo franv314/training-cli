@@ -51,13 +51,6 @@ pub struct SubmissionInfo {
 }
 
 #[derive(Deserialize)]
-#[serde(untagged)]
-enum ResultSubmissionInfo {
-    Success(SubmissionInfo),
-    Insuccess { error: String },
-}
-
-#[derive(Deserialize)]
 pub struct Submission {
     pub compilation_outcome: Option<String>,
     pub evaluation_outcome: Option<String>,
@@ -66,15 +59,8 @@ pub struct Submission {
 }
 
 #[derive(Deserialize)]
-pub struct SubmissionsOnTask {
+pub struct SubmissionList {
     pub submissions: Vec<Submission>,
-}
-
-#[derive(Deserialize)]
-#[serde(untagged)]
-enum ResultSubmissionList {
-    Success(SubmissionsOnTask),
-    Insuccess { error: String },
 }
 
 #[derive(Deserialize)]
@@ -83,15 +69,16 @@ pub struct SubmissionFormat {
 }
 
 #[derive(Deserialize)]
-#[serde(untagged)]
-enum TaskFetchResult {
-    Success(SubmissionFormat),
-    Insuccess { error: String },
-}
+struct Empty { }
 
 #[derive(Deserialize)]
 #[serde(untagged)]
-enum SubmitResult {
-    Success {},
+enum ApiResult<T> {
+    Success(T),
     Insuccess { error: String },
 }
+
+type ResultSubmissionFormat = ApiResult<SubmissionFormat>;
+type ResultSubmit = ApiResult<Empty>;
+type ResultSubmissionInfo = ApiResult<SubmissionInfo>;
+type ResultSubmissionList = ApiResult<SubmissionList>;

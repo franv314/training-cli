@@ -17,7 +17,7 @@ use super::*;
 use crate::error;
 use serde_json::json;
 
-pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<SubmissionsOnTask> {
+pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<SubmissionList> {
     let req = json!({
         "action": "list",
         "task_name": task,
