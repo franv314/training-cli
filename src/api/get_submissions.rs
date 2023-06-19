@@ -35,7 +35,7 @@ pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Submiss
 
     match json {
         ResultSubmissionList::Success(x) => Ok(x),
-        ResultSubmissionList::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch submissions! {}", error))),
+        ResultSubmissionList::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch submissions! {error}"))),
     }
 }
 
@@ -57,6 +57,6 @@ pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<Submiss
 
     match json {
         ResultSubmissionInfo::Success(x) => Ok(x),
-        ResultSubmissionInfo::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch submission! {}", error))),
+        ResultSubmissionInfo::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch submission! {error}"))),
     }
 }

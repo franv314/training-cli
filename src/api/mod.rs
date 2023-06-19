@@ -92,6 +92,6 @@ enum TaskFetchResult {
 #[derive(Deserialize)]
 #[serde(untagged)]
 enum SubmitResult {
-    Success { },
+    Success {},
     Insuccess { error: String },
 }

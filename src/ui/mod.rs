@@ -119,11 +119,29 @@ pub fn print_submission_details(details: &SubmissionInfo) {
                 let time = testcase.time;
 
                 if outcome == "Correct" {
-                    println!("{:>3}: {:>6.3} s {} {}", idx, time.unwrap_or(0.), memory_string(memory.unwrap_or(0)), text.green());
+                    println!(
+                        "{:>3}: {:>6.3} s {} {}",
+                        idx,
+                        time.unwrap_or(0.),
+                        memory_string(memory.unwrap_or(0)),
+                        text.green()
+                    );
                 } else if outcome == "Partially correct" {
-                    println!("{:>3}: {:>6.3} s {} {}", idx, time.unwrap_or(0.), memory_string(memory.unwrap_or(0)), text.yellow());
+                    println!(
+                        "{:>3}: {:>6.3} s {} {}",
+                        idx,
+                        time.unwrap_or(0.),
+                        memory_string(memory.unwrap_or(0)),
+                        text.yellow()
+                    );
                 } else {
-                    println!("{:>3}: {:>6.3} s {} {}", idx, time.unwrap_or(0.), memory_string(memory.unwrap_or(0)), text.red());
+                    println!(
+                        "{:>3}: {:>6.3} s {} {}",
+                        idx,
+                        time.unwrap_or(0.),
+                        memory_string(memory.unwrap_or(0)),
+                        text.red()
+                    );
                 }
             }
         }
