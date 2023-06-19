@@ -20,7 +20,7 @@ mod ui;
 use std::env;
 use std::fs;
 
-const TOKEN_FILE: &str = "/home/fve5/training-token.txt";
+const TOKEN_FILE: &str = "/home/franv314/.training-token.txt";
 
 fn main() -> error::Result<()> {
     let args: Vec<_> = env::args().collect();

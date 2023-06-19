@@ -14,7 +14,7 @@
  */
 
 use crate::{
-    api::{self, get_submissions::SubmissionInfo, get_submissions::SubmissionsOnTask},
+    api::{self, SubmissionInfo, SubmissionsOnTask},
     error, TOKEN_FILE,
 };
 use colored::*;
@@ -105,7 +105,9 @@ pub fn print_submission_details(details: &SubmissionInfo) {
         for subtask in &details.score_details {
             let idx = subtask.idx.unwrap_or(0);
             let max_score = subtask.max_score;
-            let score = subtask.score.unwrap_or_else(|| max_score as f64 * subtask.score_fraction.unwrap());
+            let score = subtask
+                .score
+                .unwrap_or_else(|| max_score as f64 * subtask.score_fraction.unwrap());
 
             println!("Subtask {}: {:>6.2} / {:>6.2}", idx, score, max_score);
 
@@ -117,11 +119,11 @@ pub fn print_submission_details(details: &SubmissionInfo) {
                 let time = testcase.time;
 
                 if outcome == "Correct" {
-                    println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.green());
+                    println!("{:>3}: {:>6.3} s {} {}", idx, time.unwrap_or(0.), memory_string(memory.unwrap_or(0)), text.green());
                 } else if outcome == "Partially correct" {
-                    println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.yellow());
+                    println!("{:>3}: {:>6.3} s {} {}", idx, time.unwrap_or(0.), memory_string(memory.unwrap_or(0)), text.yellow());
                 } else {
-                    println!("{:>3}: {:>6.3} s {} {}", idx, time, memory_string(memory), text.red());
+                    println!("{:>3}: {:>6.3} s {} {}", idx, time.unwrap_or(0.), memory_string(memory.unwrap_or(0)), text.red());
                 }
             }
         }

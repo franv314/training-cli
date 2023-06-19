@@ -13,11 +13,11 @@
  *  limitations under the License.
  */
 
-use super::TASK_API_URL;
+use super::*;
 use crate::error;
-use serde_json::{json, Value};
+use serde_json::json;
 
-pub fn get_task(task: &str) -> error::Result<Value> {
+pub fn get_task(task: &str) -> error::Result<SubmissionFormat> {
     let req = json!({
         "action": "get",
         "name": task,
@@ -26,13 +26,10 @@ pub fn get_task(task: &str) -> error::Result<Value> {
     let client = reqwest::blocking::Client::new();
     let resp = client.post(TASK_API_URL).json(&req).send()?;
 
-    let json: Value = resp.json()?;
+    let json: TaskFetchResult = resp.json()?;
 
-    if json.get("success").unwrap().as_i64().unwrap() == 0 {
-        return error::Result::Err(error::Error::Api(
-            "Failed to fetch task! ".to_string() + json.get("error").unwrap().as_str().unwrap(),
-        ));
+    match json {
+        TaskFetchResult::Success(x) => Ok(x),
+        TaskFetchResult::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch task! {error}"))),
     }
-
-    Ok(json)
 }
