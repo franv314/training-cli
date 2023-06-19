@@ -113,36 +113,17 @@ pub fn print_submission_details(details: &SubmissionInfo) {
 
             for testcase in &subtask.testcases {
                 let idx: i64 = testcase.idx.parse().unwrap();
-                let memory = testcase.memory;
-                let outcome = &testcase.outcome;
-                let text = &testcase.text;
-                let time = testcase.time;
+                let memory = memory_string(testcase.memory.unwrap_or(0));
+                let time = testcase.time.unwrap_or(0.);
 
-                if outcome == "Correct" {
-                    println!(
-                        "{:>3}: {:>6.3} s {} {}",
-                        idx,
-                        time.unwrap_or(0.),
-                        memory_string(memory.unwrap_or(0)),
-                        text.green()
-                    );
-                } else if outcome == "Partially correct" {
-                    println!(
-                        "{:>3}: {:>6.3} s {} {}",
-                        idx,
-                        time.unwrap_or(0.),
-                        memory_string(memory.unwrap_or(0)),
-                        text.yellow()
-                    );
-                } else {
-                    println!(
-                        "{:>3}: {:>6.3} s {} {}",
-                        idx,
-                        time.unwrap_or(0.),
-                        memory_string(memory.unwrap_or(0)),
-                        text.red()
-                    );
-                }
+                let text = match testcase.outcome.as_str() {
+                    "Correct" => testcase.text.green(),
+                    "Partially correct" => testcase.text.yellow(),
+                    "Not correct" => testcase.text.red(),
+                    x => panic!("{} outcome should not exist", x),
+                };
+
+                println!("{:>3}: {:>6.3} s {} {}", idx, time, memory, text);
             }
         }
     }
