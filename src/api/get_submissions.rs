@@ -15,13 +15,13 @@
 
 use super::*;
 use crate::error;
-use serde_json::json;
 
 pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<SubmissionList> {
-    let req = json!({
-        "action": "list",
-        "task_name": task,
-    });
+    let req = ApiQuery {
+        action: "list",
+        task_name: Some(task.to_string()),
+        ..EMPTY_QUERY
+    };
 
     let client = reqwest::blocking::Client::new();
     let resp = client
@@ -40,10 +40,11 @@ pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Submiss
 }
 
 pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<SubmissionInfo> {
-    let req = json!({
-        "action": "details",
-        "id": sub_id,
-    });
+    let req = ApiQuery {
+        action: "details",
+        id: Some(sub_id),
+        ..EMPTY_QUERY
+    };
 
     let client = reqwest::blocking::Client::new();
     let resp = client

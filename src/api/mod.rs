@@ -13,7 +13,9 @@
  *  limitations under the License.
  */
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
+use std::collections::HashMap;
 
 pub mod get_submissions;
 pub mod get_task;
@@ -69,16 +71,47 @@ pub struct SubmissionFormat {
 }
 
 #[derive(Deserialize)]
-struct Empty { }
+struct Empty {}
 
 #[derive(Deserialize)]
 #[serde(untagged)]
 enum ApiResult<T> {
-    Success(T),
     Insuccess { error: String },
+    Success(T),
 }
 
 type ResultSubmissionFormat = ApiResult<SubmissionFormat>;
 type ResultSubmit = ApiResult<Empty>;
 type ResultSubmissionInfo = ApiResult<SubmissionInfo>;
 type ResultSubmissionList = ApiResult<SubmissionList>;
+
+#[derive(Serialize)]
+struct File {
+    data: String,
+    filename: String,
+    language: String,
+}
+
+#[skip_serializing_none]
+#[derive(Serialize)]
+struct ApiQuery {
+    action: &'static str,
+    name: Option<String>,
+    task_name: Option<String>,
+    username: Option<String>,
+    password: Option<String>,
+    keep_signed: Option<bool>,
+    id: Option<i64>,
+    files: Option<HashMap<String, File>>,
+}
+
+const EMPTY_QUERY: ApiQuery = ApiQuery {
+    action: "",
+    name: None,
+    task_name: None,
+    username: None,
+    password: None,
+    keep_signed: None,
+    files: None,
+    id: None,
+};

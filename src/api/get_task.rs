@@ -15,13 +15,13 @@
 
 use super::*;
 use crate::error;
-use serde_json::json;
 
 pub fn get_task(task: &str) -> error::Result<SubmissionFormat> {
-    let req = json!({
-        "action": "get",
-        "name": task,
-    });
+    let req = ApiQuery {
+        action: "get",
+        name: Some(task.to_string()),
+        ..EMPTY_QUERY
+    };
 
     let client = reqwest::blocking::Client::new();
     let resp = client.post(TASK_API_URL).json(&req).send()?;

@@ -16,17 +16,8 @@
 use super::*;
 use crate::error;
 use base64::{engine::general_purpose, Engine as _};
-use serde::Serialize;
-use serde_json::json;
 use std::collections::HashMap;
 use std::fs;
-
-#[derive(Serialize)]
-struct File {
-    data: String,
-    filename: String,
-    language: String,
-}
 
 fn get_language(filename: &str) -> Result<String, &str> {
     let extension = filename.split(|c| c == '.').last().unwrap_or("");
@@ -42,7 +33,7 @@ fn get_language(filename: &str) -> Result<String, &str> {
 }
 
 pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()> {
-    let task_resp = super::get_task::get_task(task)?;
+    let task_resp = get_task::get_task(task)?;
     let submission_format = task_resp.submission_format;
 
     if submission_format.len() > filenames.len() {
@@ -52,9 +43,9 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
     let files = submission_format
         .iter()
         .enumerate()
-        .map(|(i, name)| -> error::Result<(&String, File)> {
+        .map(|(i, name)| {
             Ok((
-                name,
+                name.clone(),
                 File {
                     data: general_purpose::STANDARD.encode(fs::read_to_string(&filenames[i])?.as_bytes()),
                     language: get_language(&filenames[i])?,
@@ -64,11 +55,12 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
         })
         .collect::<error::Result<HashMap<_, _>>>()?;
 
-    let req = json!({
-        "action": "new",
-        "task_name": task,
-        "files": files,
-    });
+    let req = ApiQuery {
+        action: "new",
+        task_name: Some(task.to_string()),
+        files: Some(files),
+        ..EMPTY_QUERY
+    };
 
     let client = reqwest::blocking::Client::new();
     let resp = client
