@@ -62,10 +62,11 @@ pub fn print_submissions(subs: &SubmissionList, count: usize) {
         } else if sub.evaluation_outcome.is_none() {
             "Valutazione in corso".blue()
         } else {
-            let score = format!("{}/100", sub.score);
-            if sub.score == 0. {
+            let sub_score = sub.score.unwrap();
+            let score = format!("{}/100", sub_score);
+            if sub_score == 0. {
                 score.red()
-            } else if sub.score == 100. {
+            } else if sub_score == 100. {
                 score.green()
             } else {
                 score.yellow()

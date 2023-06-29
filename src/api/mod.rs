@@ -57,7 +57,7 @@ pub struct Submission {
     pub compilation_outcome: Option<String>,
     pub evaluation_outcome: Option<String>,
     pub id: i32,
-    pub score: f64,
+    pub score: Option<f64>,
 }
 
 #[derive(Deserialize)]
