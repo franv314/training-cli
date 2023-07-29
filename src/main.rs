@@ -39,13 +39,19 @@ fn main() -> error::Result<()> {
         ui::logout()?;
     } else if args[1] == "submit" {
         if args.len() < 4 {
-            println!("Usage: `training-cli submit [task_name] [file1] ...`");
+            eprintln!("Usage: `training-cli submit [task_name] [file1] ...`");
             return Err(error::Error::Generic("Not enough arguments!".to_string()));
         }
-        api::submit::submit(&args[2], &args[3..], &token)?;
+        api::submit::submit(&args[2], &args[3..], &token, false)?;
+    } else if args[1] == "submit-meme" {
+        if args.len() < 4 {
+            eprintln!("Usage: `training-cli submit-meme [task_name] [file1] ...`");
+            return Err(error::Error::Generic("Not enough arguments!".to_string()));
+        }
+        api::submit::submit(&args[2], &args[3..], &token, true)?;
     } else if args[1] == "list-sub" {
         if args.len() < 3 {
-            println!("Usage: `training-cli list-sub [task-name] [optional: # of subs]`");
+            eprintln!("Usage: `training-cli list-sub [task-name] [optional: # of subs]`");
             return Err(error::Error::Generic("Not enough arguments!".to_string()));
         }
 
@@ -61,7 +67,7 @@ fn main() -> error::Result<()> {
         ui::print_submissions(&subs, no);
     } else if args[1] == "sub-details" {
         if args.len() < 3 {
-            println!("Usage: `training-cli sub-details [sub_id]`");
+            eprintln!("Usage: `training-cli sub-details [sub_id]`");
             return Err(error::Error::Generic("Not enough arguments!".to_string()));
         }
 
@@ -69,6 +75,9 @@ fn main() -> error::Result<()> {
 
         let sub_details = api::get_submissions::get_submission_details(sub_id, &token)?;
         ui::print_submission_details(&sub_details);
+    } else {
+        eprintln!("No valid command given!");
+        return Err(error::Error::Generic("No command given!".to_string()));
     }
 
     Ok(())

@@ -32,7 +32,7 @@ fn get_language(filename: &str) -> Result<String, &str> {
     }
 }
 
-pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()> {
+pub fn submit(task: &str, filenames: &[String], token: &str, use_digraphs: bool) -> error::Result<()> {
     let task_resp = get_task::get_task(task)?;
     let submission_format = task_resp.submission_format;
 
@@ -47,7 +47,30 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
             Ok((
                 name.clone(),
                 File {
-                    data: general_purpose::STANDARD.encode(fs::read_to_string(&filenames[i])?.as_bytes()),
+                    data: general_purpose::STANDARD.encode({
+                        let file = fs::read_to_string(&filenames[i])?;
+                        if use_digraphs {
+                            file
+                                .replace("&&", " and ")
+                                .replace("&=", " and_eq ")
+                                .replace("&", " bitand ")
+                                .replace("||", " or ")
+                                .replace("|=", " or_eq ")
+                                .replace("|", " bitor ")
+                                .replace("^=", " xor_eq ")
+                                .replace("^", " xor ")
+                                .replace("!=", " not_eq ")
+                                .replace("!", " not ")
+                                .replace("~", " compl ")
+                                .replace("{", "<%")
+                                .replace("}", "%>")
+                                .replace("[", "<:")
+                                .replace("]", ":>")
+                                .replace("#", "%:")
+                        } else {
+                            file
+                        }
+                    }.as_bytes()),
                     language: get_language(&filenames[i])?,
                     filename: filenames[i].clone(),
                 },
