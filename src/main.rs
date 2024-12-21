@@ -2,7 +2,8 @@
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  You may obtain a copy of th
+use std::env;e License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -25,7 +26,7 @@ use clap::Parser;
 
 use cli::{Cli, Commands};
 
-const TOKEN_FILE: &str = "/home/fve5/training-token";
+const TOKEN_FILE: &str = "INSERIRE IL PERCORSO COMPLETO QUI";
 
 fn get_token() -> Result<String> {
     fs::read_to_string(TOKEN_FILE).with_context(|| format!("Failed to fetch token file at {TOKEN_FILE}"))
@@ -40,16 +41,20 @@ fn main() -> Result<()> {
         Commands::Submit(args) => {
             let token = get_token()?;
             api::submit::submit(&args.task_name, &args.files, &token)
-        },
+        }
         Commands::ListSub(args) => {
             let token = get_token()?;
             let subs = api::get_submissions::get_submissions_on_task(&args.task_name, &token)?;
-            Ok(ui::print_submissions(&subs, args.count.unwrap_or(usize::MAX)))
-        },
+
+            ui::print_submissions(&subs, args.count.unwrap_or(usize::MAX));
+            Ok(())
+        }
         Commands::SubDetails(args) => {
             let token = get_token()?;
             let sub_details = api::get_submissions::get_submission_details(args.sub_id, &token)?;
-            Ok(ui::print_submission_details(&sub_details))
-        },
+
+            ui::print_submission_details(&sub_details);
+            Ok(())
+        }
     }
 }

@@ -23,6 +23,7 @@ use std::fs;
 use std::io::{self, Write};
 
 use anyhow::Result;
+use rpassword::prompt_password;
 
 const BYTES_IN_KIBIBYTE: i64 = 1024;
 const BYTES_IN_MEBIBYTE: i64 = 1048576;
@@ -35,17 +36,13 @@ pub fn logout() -> Result<()> {
 
 pub fn login() -> Result<()> {
     let mut username = String::new();
-    let mut password = String::new();
 
     print!("Username: ");
     io::stdout().flush()?;
     io::stdin().read_line(&mut username)?;
     username.pop();
 
-    print!("Password: ");
-    io::stdout().flush()?;
-    io::stdin().read_line(&mut password)?;
-    password.pop();
+    let password = prompt_password("Password: ")?;
 
     let token = api::login::login(&username, &password)?;
 
