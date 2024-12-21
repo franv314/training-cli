@@ -15,23 +15,25 @@
 
 use crate::{
     api::{self, SubmissionInfo, SubmissionList},
-    error, TOKEN_FILE,
+    TOKEN_FILE,
 };
 use colored::*;
 use std::cmp;
 use std::fs;
 use std::io::{self, Write};
 
+use anyhow::Result;
+
 const BYTES_IN_KIBIBYTE: i64 = 1024;
 const BYTES_IN_MEBIBYTE: i64 = 1048576;
 const BYTES_IN_GIBIBYTE: i64 = 1073741824;
 
-pub fn logout() -> error::Result<()> {
+pub fn logout() -> Result<()> {
     fs::remove_file(TOKEN_FILE)?;
     Ok(())
 }
 
-pub fn login() -> error::Result<()> {
+pub fn login() -> Result<()> {
     let mut username = String::new();
     let mut password = String::new();
 

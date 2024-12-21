@@ -14,12 +14,12 @@
  */
 
 use super::*;
-use crate::error;
 use base64::{engine::general_purpose, Engine as _};
+use anyhow::{bail, Result};
 use std::collections::HashMap;
 use std::fs;
 
-fn get_language(filename: &str) -> Result<String, &str> {
+fn get_language(filename: &str) -> Result<String> {
     let extension = filename.split(|c| c == '.').last().unwrap_or("");
     match extension {
         "cc" | "cpp" => Ok("C++17 / g++".to_string()),
@@ -28,16 +28,16 @@ fn get_language(filename: &str) -> Result<String, &str> {
         "py" => Ok("Python 3 / CPython".to_string()),
         "pas" => Ok("Pascal / fpc".to_string()),
         "txt" => Ok("".to_string()),
-        _ => Err("Could not resolve source language!"),
+        _ => bail!("Could not resolve source language!"),
     }
 }
 
-pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()> {
+pub fn submit(task: &str, filenames: &[String], token: &str) -> Result<()> {
     let task_resp = get_task::get_task(task)?;
     let submission_format = task_resp.submission_format;
 
     if submission_format.len() > filenames.len() {
-        return Err(error::Error::Generic("Not enough files to submit!".to_string()));
+        bail!("Not enough files to submit!");
     }
 
     let files = submission_format
@@ -53,7 +53,7 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
                 },
             ))
         })
-        .collect::<error::Result<HashMap<_, _>>>()?;
+        .collect::<Result<HashMap<_, _>>>()?;
 
     let req = ApiQuery {
         action: "new",
@@ -74,6 +74,6 @@ pub fn submit(task: &str, filenames: &[String], token: &str) -> error::Result<()
 
     match json {
         ResultSubmit::Success(_) => Ok(()),
-        ResultSubmit::Insuccess { error } => Err(error::Error::Api(format!("Failed to submit! {error}"))),
+        ResultSubmit::Insuccess { error } => bail!("Failed to submit! {error}"),
     }
 }

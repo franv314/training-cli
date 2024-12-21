@@ -14,9 +14,9 @@
  */
 
 use super::*;
-use crate::error;
+use anyhow::{bail, Result};
 
-pub fn get_task(task: &str) -> error::Result<SubmissionFormat> {
+pub fn get_task(task: &str) -> Result<SubmissionFormat> {
     let req = ApiQuery {
         action: "get",
         name: Some(task.to_string()),
@@ -30,6 +30,6 @@ pub fn get_task(task: &str) -> error::Result<SubmissionFormat> {
 
     match json {
         ResultSubmissionFormat::Success(x) => Ok(x),
-        ResultSubmissionFormat::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch task! {error}"))),
+        ResultSubmissionFormat::Insuccess { error } => bail!("Failed to fetch task! {error}"),
     }
 }

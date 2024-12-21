@@ -14,39 +14,42 @@
  */
 
 mod api;
-mod error;
 mod ui;
 
 use std::env;
 use std::fs;
 
-const TOKEN_FILE: &str = "INSERIRE IL PERCORSO COMPLETO QUI";
+use anyhow::Context;
+use anyhow::{bail, Result};
 
-fn main() -> error::Result<()> {
+const TOKEN_FILE: &str = "/home/fve5/training-token";
+
+fn main() -> Result<()> {
     let args: Vec<_> = env::args().collect();
 
     if args.len() == 1 {
-        return Err(error::Error::Generic("No command given!".to_string()));
+        bail!("No command given!");
     }
 
     if args[1] == "login" {
         return ui::login();
     }
 
-    let token = fs::read_to_string(TOKEN_FILE).map_err(|_| "No token found! Login via `training-cli login`")?;
+    let token = fs::read_to_string(TOKEN_FILE)
+        .with_context(|| format!("Failed to fetch token file at {TOKEN_FILE}"))?;
 
     if args[1] == "logout" {
         ui::logout()?;
     } else if args[1] == "submit" {
         if args.len() < 4 {
             println!("Usage: `training-cli submit [task_name] [file1] ...`");
-            return Err(error::Error::Generic("Not enough arguments!".to_string()));
+            bail!("Not enough arguments!");
         }
         api::submit::submit(&args[2], &args[3..], &token)?;
     } else if args[1] == "list-sub" {
         if args.len() < 3 {
             println!("Usage: `training-cli list-sub [task-name] [optional: # of subs]`");
-            return Err(error::Error::Generic("Not enough arguments!".to_string()));
+            bail!("Not enough arguments!");
         }
 
         let no = if args.len() == 3 {
@@ -54,7 +57,7 @@ fn main() -> error::Result<()> {
         } else {
             args[3]
                 .parse()
-                .map_err(|_| "Number of submissions to show should be an integer!")?
+                .context("Number of submissions to show should be an integer!")?
         };
 
         let subs = api::get_submissions::get_submissions_on_task(&args[2], &token)?;
@@ -62,10 +65,10 @@ fn main() -> error::Result<()> {
     } else if args[1] == "sub-details" {
         if args.len() < 3 {
             println!("Usage: `training-cli sub-details [sub_id]`");
-            return Err(error::Error::Generic("Not enough arguments!".to_string()));
+            bail!("Not enough arguments!");
         }
 
-        let sub_id = args[2].parse().map_err(|_| "Submission id should be an integer!")?;
+        let sub_id = args[2].parse().context("Submission id should be an integer!")?;
 
         let sub_details = api::get_submissions::get_submission_details(sub_id, &token)?;
         ui::print_submission_details(&sub_details);

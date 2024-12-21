@@ -14,9 +14,9 @@
  */
 
 use super::*;
-use crate::error;
+use anyhow::{anyhow, Result};
 
-pub fn login(username: &str, password: &str) -> error::Result<String> {
+pub fn login(username: &str, password: &str) -> Result<String> {
     let req = ApiQuery {
         action: "login",
         keep_signed: Some(true),
@@ -31,7 +31,7 @@ pub fn login(username: &str, password: &str) -> error::Result<String> {
     let token = resp
         .headers()
         .get("set-cookie")
-        .ok_or(error::Error::Api("Failed to login!".to_string()))?;
+        .ok_or(anyhow!("Failed to login!"))?;
 
     Ok(token.to_str().unwrap().to_string())
 }

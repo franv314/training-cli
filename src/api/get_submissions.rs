@@ -14,9 +14,9 @@
  */
 
 use super::*;
-use crate::error;
+use anyhow::{bail, Result};
 
-pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<SubmissionList> {
+pub fn get_submissions_on_task(task: &str, token: &str) -> Result<SubmissionList> {
     let req = ApiQuery {
         action: "list",
         task_name: Some(task.to_string()),
@@ -35,11 +35,11 @@ pub fn get_submissions_on_task(task: &str, token: &str) -> error::Result<Submiss
 
     match json {
         ResultSubmissionList::Success(x) => Ok(x),
-        ResultSubmissionList::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch submissions! {error}"))),
+        ResultSubmissionList::Insuccess { error } => bail!("Failed to fetch submissions! {error}"),
     }
 }
 
-pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<SubmissionInfo> {
+pub fn get_submission_details(sub_id: i64, token: &str) -> Result<SubmissionInfo> {
     let req = ApiQuery {
         action: "details",
         id: Some(sub_id),
@@ -58,6 +58,6 @@ pub fn get_submission_details(sub_id: i64, token: &str) -> error::Result<Submiss
 
     match json {
         ResultSubmissionInfo::Success(x) => Ok(x),
-        ResultSubmissionInfo::Insuccess { error } => Err(error::Error::Api(format!("Failed to fetch submission! {error}"))),
+        ResultSubmissionInfo::Insuccess { error } => bail!("Failed to fetch submission! {error}"),
     }
 }
