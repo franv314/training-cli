@@ -28,10 +28,7 @@ pub fn login(username: &str, password: &str) -> Result<String> {
     let client = reqwest::blocking::Client::new();
     let resp = client.post(USER_API_URL).json(&req).send()?;
 
-    let token = resp
-        .headers()
-        .get("set-cookie")
-        .ok_or(anyhow!("Failed to login!"))?;
+    let token = resp.headers().get("set-cookie").ok_or(anyhow!("Failed to login!"))?;
 
     Ok(token.to_str().unwrap().to_string())
 }

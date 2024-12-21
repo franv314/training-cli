@@ -14,13 +14,13 @@
  */
 
 use super::*;
-use base64::{engine::general_purpose, Engine as _};
 use anyhow::{bail, Result};
+use base64::{engine::general_purpose, Engine as _};
 use std::collections::HashMap;
 use std::fs;
 
 fn get_language(filename: &str) -> Result<String> {
-    let extension = filename.split(|c| c == '.').last().unwrap_or("");
+    let extension = filename.split('.').last().unwrap_or("");
     match extension {
         "cc" | "cpp" => Ok("C++17 / g++".to_string()),
         "c" => Ok("C11 / gcc".to_string()),
